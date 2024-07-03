@@ -6,8 +6,21 @@ from .serializers import UserSerializer
 from .models import CustomUser
 import jwt, datetime
 from rest_framework.views import APIView
+from rest_framework import generics
+from .models import Patient
+from .serializers import PatientSerializer
+
 
 # Create your views here.
+class PatientListCreateView(generics.ListCreateAPIView):
+    queryset = Patient.objects.all()
+    serializer_class = PatientSerializer
+
+class PatientRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Patient.objects.all()
+    serializer_class = PatientSerializer
+
+    
 class RegisterView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
@@ -20,8 +33,7 @@ class LoginView(APIView):
     def post(self, request):
         email = request.data['email']
         password = request.data['password']
-        print(email)
-        print(password)
+        
         user = CustomUser.objects.filter(email=email).first()
 
         if user is None:
@@ -47,4 +59,11 @@ class LoginView(APIView):
                 'name': user.name,
                 'jwt': token
             }   
+        return response
+    
+class LogoutView(APIView):
+    def post(self, request):
+        response = Response()
+        response.delete_cookie('jwt')
+        response.data = {'message': 'success'}
         return response
